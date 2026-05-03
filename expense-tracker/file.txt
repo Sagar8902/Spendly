@@ -44,7 +44,7 @@ git commit -m "landing: add privacy policy page and route”
 I've attached a screenshot of the updated Spendly hero section design.
 
 Modify only the hero section in @templates/landing.html and @static/css/landing.css
-to match this image exactly. Do not touch any other part of the page.
+to match this @image.png exactly. Do not touch any other part of the page.
 
 git commit -m "landing: redesign hero section to match mockup"
 
