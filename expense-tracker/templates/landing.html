@@ -28,7 +28,7 @@
 
         <div class="lp-actions">
             <a href="{{ url_for('register') }}" class="lp-btn">Create free account</a>
-            <a href="#" class="lp-btn">See how it works</a>
+            <a href="#" class="lp-btn" id="lp-see-how">See how it works</a>
         </div>
 
         <div class="lp-dashboard">
@@ -109,4 +109,52 @@
     </div>
 </section>
 
+<!-- Video modal -->
+<div id="lp-modal" class="lp-modal" aria-modal="true" role="dialog" aria-label="See how it works">
+    <div class="lp-modal-backdrop"></div>
+    <div class="lp-modal-box">
+        <button class="lp-modal-close" aria-label="Close">&times;</button>
+        <div class="lp-modal-video">
+            <iframe
+                id="lp-modal-iframe"
+                data-src="https://www.youtube.com/embed/dQw4w9WgXcQ"
+                src=""
+                title="See how Spendly works"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowfullscreen
+                frameborder="0"
+            ></iframe>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function () {
+    var modal    = document.getElementById('lp-modal');
+    var iframe   = document.getElementById('lp-modal-iframe');
+    var trigger  = document.getElementById('lp-see-how');
+    var closeBtn = modal.querySelector('.lp-modal-close');
+    var backdrop = modal.querySelector('.lp-modal-backdrop');
+
+    function openModal() {
+        iframe.src = iframe.dataset.src;
+        modal.classList.add('lp-modal--open');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeModal() {
+        modal.classList.remove('lp-modal--open');
+        iframe.src = '';
+        document.body.style.overflow = '';
+    }
+
+    trigger.addEventListener('click', function (e) { e.preventDefault(); openModal(); });
+    closeBtn.addEventListener('click', closeModal);
+    backdrop.addEventListener('click', closeModal);
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeModal(); });
+}());
+</script>
 {% endblock %}
