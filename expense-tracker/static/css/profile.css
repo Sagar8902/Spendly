@@ -215,6 +215,53 @@
     text-align: right;
 }
 
+/* ── Date Filter ── */
+.profile-filter-section { margin-bottom: 1.5rem; }
+
+.filter-form { margin-top: 0.75rem; }
+
+.filter-inputs {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.filter-label {
+    font-size: 0.85rem;
+    color: var(--ink-muted);
+    font-family: var(--font-body);
+}
+
+.filter-date { width: 160px; }
+
+.filter-btn {
+    width: auto;
+    padding: 0.6rem 1.25rem;
+}
+
+.filter-clear {
+    padding: 0.6rem 1rem;
+    font-size: 0.85rem;
+    color: var(--ink-muted);
+    text-decoration: none;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+}
+
+.filter-clear:hover { color: var(--ink); }
+
+.filter-active-banner {
+    margin-top: 0.75rem;
+    padding: 0.6rem 1rem;
+    background: var(--accent-light);
+    border: 1px solid var(--accent);
+    border-radius: var(--radius-sm);
+    font-size: 0.85rem;
+    color: var(--accent);
+    font-family: var(--font-body);
+}
+
 /* ── Responsive ── */
 @media (max-width: 600px) {
     .profile-page {

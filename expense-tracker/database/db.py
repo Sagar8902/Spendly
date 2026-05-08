@@ -68,54 +68,69 @@ def get_user_by_id(user_id):
         conn.close()
 
 
-def get_user_stats(user_id):
+def get_user_stats(user_id, from_date=None, to_date=None):
+    date_filter = "AND date BETWEEN ? AND ?" if (from_date and to_date) else ""
+    date_params = (from_date, to_date) if (from_date and to_date) else ()
     conn = get_db()
     try:
-        return conn.execute("""
+        return conn.execute(f"""
             SELECT
                 COALESCE(SUM(amount), 0) AS total,
                 COUNT(*) AS cnt,
                 (SELECT category FROM expenses
-                 WHERE user_id = ?
+                 WHERE user_id = ? {date_filter}
                  GROUP BY category
                  ORDER BY SUM(amount) DESC
                  LIMIT 1) AS top_cat
             FROM expenses
-            WHERE user_id = ?
-        """, (user_id, user_id)).fetchone()
+            WHERE user_id = ? {date_filter}
+        """, (user_id, *date_params, user_id, *date_params)).fetchone()
     finally:
         conn.close()
 
 
-def get_recent_transactions(user_id, limit=5):
-    conn = get_db()
-    try:
-        return conn.execute("""
+def get_recent_transactions(user_id, limit=5, from_date=None, to_date=None):
+    if from_date and to_date:
+        sql = """
+            SELECT date, description, category, amount
+            FROM expenses
+            WHERE user_id = ? AND date BETWEEN ? AND ?
+            ORDER BY date DESC, id DESC
+        """
+        params = (user_id, from_date, to_date)
+    else:
+        sql = """
             SELECT date, description, category, amount
             FROM expenses
             WHERE user_id = ?
             ORDER BY date DESC, id DESC
             LIMIT ?
-        """, (user_id, limit)).fetchall()
+        """
+        params = (user_id, limit)
+    conn = get_db()
+    try:
+        return conn.execute(sql, params).fetchall()
     finally:
         conn.close()
 
 
-def get_category_breakdown(user_id):
+def get_category_breakdown(user_id, from_date=None, to_date=None):
+    date_filter = "AND date BETWEEN ? AND ?" if (from_date and to_date) else ""
+    date_params = (from_date, to_date) if (from_date and to_date) else ()
     conn = get_db()
     try:
-        return conn.execute("""
+        return conn.execute(f"""
             SELECT
                 category AS name,
                 SUM(amount) AS total,
                 CAST(ROUND(SUM(amount) * 100.0 /
-                    (SELECT SUM(amount) FROM expenses WHERE user_id = ?), 0)
+                    (SELECT SUM(amount) FROM expenses WHERE user_id = ? {date_filter}), 0)
                 AS INTEGER) AS percent
             FROM expenses
-            WHERE user_id = ?
+            WHERE user_id = ? {date_filter}
             GROUP BY category
             ORDER BY total DESC
-        """, (user_id, user_id)).fetchall()
+        """, (user_id, *date_params, user_id, *date_params)).fetchall()
     finally:
         conn.close()
 

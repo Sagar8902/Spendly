@@ -32,6 +32,29 @@
         </div>
     </section>
 
+    <section class="profile-section profile-filter-section">
+        <h2 class="profile-section-title">Filter by Date</h2>
+        <form class="filter-form" method="GET" action="{{ url_for('profile_page') }}">
+            <div class="filter-inputs">
+                <label class="filter-label" for="from_date">From</label>
+                <input class="form-input filter-date" type="date" id="from_date"
+                       name="from_date" value="{{ from_date }}">
+                <label class="filter-label" for="to_date">To</label>
+                <input class="form-input filter-date" type="date" id="to_date"
+                       name="to_date" value="{{ to_date }}">
+                <button class="btn-submit filter-btn" type="submit">Apply</button>
+                {% if from_date and to_date %}
+                <a class="filter-clear" href="{{ url_for('profile_page') }}">Clear</a>
+                {% endif %}
+            </div>
+        </form>
+        {% if from_date and to_date %}
+        <div class="filter-active-banner">
+            Showing results from {{ from_date }} to {{ to_date }}
+        </div>
+        {% endif %}
+    </section>
+
     <section class="profile-section">
         <h2 class="profile-section-title">Recent Transactions</h2>
         <div class="profile-table-wrap">
