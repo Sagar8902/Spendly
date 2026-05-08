@@ -85,8 +85,43 @@ def logout():
 
 
 @app.route("/profile")
-def profile():
-    return "Profile page — coming in Step 4"
+def profile_page():
+    if not session.get("user_id"):
+        return redirect(url_for("login"))
+
+    user = {
+        "name": "Demo User",
+        "email": "demo@spendly.com",
+        "member_since": "January 2026",
+    }
+    stats = {
+        "total_spent": "₹3,574",
+        "transaction_count": 8,
+        "top_category": "Bills",
+    }
+    transactions = [
+        {"date": "08 May 2026", "description": "Restaurant lunch",  "category": "Food",          "amount": "₹180.00"},
+        {"date": "07 May 2026", "description": "Stationery",        "category": "Other",         "amount": "₹75.00"},
+        {"date": "06 May 2026", "description": "T-shirt",           "category": "Shopping",      "amount": "₹899.00"},
+        {"date": "05 May 2026", "description": "Movie tickets",     "category": "Entertainment", "amount": "₹250.00"},
+        {"date": "04 May 2026", "description": "Pharmacy",          "category": "Health",        "amount": "₹500.00"},
+    ]
+    categories = [
+        {"name": "Bills",         "amount": "₹1,200", "percent": 34},
+        {"name": "Shopping",      "amount": "₹899",   "percent": 25},
+        {"name": "Health",        "amount": "₹500",   "percent": 14},
+        {"name": "Food",          "amount": "₹500",   "percent": 14},
+        {"name": "Entertainment", "amount": "₹250",   "percent": 7},
+        {"name": "Transport",     "amount": "₹150",   "percent": 4},
+        {"name": "Other",         "amount": "₹75",    "percent": 2},
+    ]
+    return render_template(
+        "profile.html",
+        user=user,
+        stats=stats,
+        transactions=transactions,
+        categories=categories,
+    )
 
 
 @app.route("/expenses/add")
