@@ -1,9 +1,12 @@
 import os
 import sqlite3
+from datetime import datetime
 
-from flask import Flask, render_template, request, redirect, url_for, session
+from flask import Flask, render_template, request, redirect, url_for, session, abort
 from werkzeug.security import check_password_hash
-from database.db import get_db, init_db, seed_db, register_user, get_user_by_email
+from database.db import (get_db, init_db, seed_db, register_user, get_user_by_email,
+                         get_user_by_id, get_user_stats, get_recent_transactions,
+                         get_category_breakdown)
 
 app = Flask(__name__)
 app.secret_key = os.environ.get('SECRET_KEY', 'dev-fallback-change-in-prod')
@@ -89,32 +92,47 @@ def profile_page():
     if not session.get("user_id"):
         return redirect(url_for("login"))
 
+    user_id = session["user_id"]
+    row = get_user_by_id(user_id)
+    if row is None:
+        abort(404)
+
+    member_since = datetime.strptime(
+        row["created_at"], "%Y-%m-%d %H:%M:%S"
+    ).strftime("%B %Y")
+
     user = {
-        "name": "Demo User",
-        "email": "demo@spendly.com",
-        "member_since": "January 2026",
+        "name":         row["name"],
+        "email":        row["email"],
+        "member_since": member_since,
     }
+
+    s = get_user_stats(user_id)
     stats = {
-        "total_spent": "₹3,574",
-        "transaction_count": 8,
-        "top_category": "Bills",
+        "total_spent":       f"₹{s['total']:,.0f}",
+        "transaction_count": s["cnt"],
+        "top_category":      s["top_cat"] or "—",
     }
+
     transactions = [
-        {"date": "08 May 2026", "description": "Restaurant lunch",  "category": "Food",          "amount": "₹180.00"},
-        {"date": "07 May 2026", "description": "Stationery",        "category": "Other",         "amount": "₹75.00"},
-        {"date": "06 May 2026", "description": "T-shirt",           "category": "Shopping",      "amount": "₹899.00"},
-        {"date": "05 May 2026", "description": "Movie tickets",     "category": "Entertainment", "amount": "₹250.00"},
-        {"date": "04 May 2026", "description": "Pharmacy",          "category": "Health",        "amount": "₹500.00"},
+        {
+            "date":        datetime.strptime(tx["date"], "%Y-%m-%d").strftime("%d %b %Y"),
+            "description": tx["description"],
+            "category":    tx["category"],
+            "amount":      f"₹{tx['amount']:.2f}",
+        }
+        for tx in get_recent_transactions(user_id)
     ]
+
     categories = [
-        {"name": "Bills",         "amount": "₹1,200", "percent": 34},
-        {"name": "Shopping",      "amount": "₹899",   "percent": 25},
-        {"name": "Health",        "amount": "₹500",   "percent": 14},
-        {"name": "Food",          "amount": "₹500",   "percent": 14},
-        {"name": "Entertainment", "amount": "₹250",   "percent": 7},
-        {"name": "Transport",     "amount": "₹150",   "percent": 4},
-        {"name": "Other",         "amount": "₹75",    "percent": 2},
+        {
+            "name":    cat["name"],
+            "amount":  f"₹{cat['total']:,.0f}",
+            "percent": cat["percent"],
+        }
+        for cat in get_category_breakdown(user_id)
     ]
+
     return render_template(
         "profile.html",
         user=user,

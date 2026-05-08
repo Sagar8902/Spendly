@@ -58,6 +58,68 @@ def get_user_by_email(email):
         conn.close()
 
 
+def get_user_by_id(user_id):
+    conn = get_db()
+    try:
+        return conn.execute(
+            "SELECT * FROM users WHERE id = ?", (user_id,)
+        ).fetchone()
+    finally:
+        conn.close()
+
+
+def get_user_stats(user_id):
+    conn = get_db()
+    try:
+        return conn.execute("""
+            SELECT
+                COALESCE(SUM(amount), 0) AS total,
+                COUNT(*) AS cnt,
+                (SELECT category FROM expenses
+                 WHERE user_id = ?
+                 GROUP BY category
+                 ORDER BY SUM(amount) DESC
+                 LIMIT 1) AS top_cat
+            FROM expenses
+            WHERE user_id = ?
+        """, (user_id, user_id)).fetchone()
+    finally:
+        conn.close()
+
+
+def get_recent_transactions(user_id, limit=5):
+    conn = get_db()
+    try:
+        return conn.execute("""
+            SELECT date, description, category, amount
+            FROM expenses
+            WHERE user_id = ?
+            ORDER BY date DESC, id DESC
+            LIMIT ?
+        """, (user_id, limit)).fetchall()
+    finally:
+        conn.close()
+
+
+def get_category_breakdown(user_id):
+    conn = get_db()
+    try:
+        return conn.execute("""
+            SELECT
+                category AS name,
+                SUM(amount) AS total,
+                CAST(ROUND(SUM(amount) * 100.0 /
+                    (SELECT SUM(amount) FROM expenses WHERE user_id = ?), 0)
+                AS INTEGER) AS percent
+            FROM expenses
+            WHERE user_id = ?
+            GROUP BY category
+            ORDER BY total DESC
+        """, (user_id, user_id)).fetchall()
+    finally:
+        conn.close()
+
+
 def seed_db():
     conn = get_db()
     row = conn.execute("SELECT COUNT(*) FROM users").fetchone()
