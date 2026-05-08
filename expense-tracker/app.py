@@ -87,6 +87,14 @@ def logout():
     return redirect(url_for("landing"))
 
 
+def _parse_date(value):
+    try:
+        datetime.strptime(value, "%Y-%m-%d")
+        return value
+    except (ValueError, TypeError):
+        return None
+
+
 @app.route("/profile")
 def profile_page():
     if not session.get("user_id"):
@@ -107,7 +115,15 @@ def profile_page():
         "member_since": member_since,
     }
 
-    s = get_user_stats(user_id)
+    from_date = _parse_date(request.args.get("from_date", ""))
+    to_date   = _parse_date(request.args.get("to_date", ""))
+
+    if not (from_date and to_date):
+        from_date = to_date = None
+    elif from_date > to_date:
+        from_date, to_date = to_date, from_date
+
+    s = get_user_stats(user_id, from_date, to_date)
     stats = {
         "total_spent":       f"₹{s['total']:,.0f}",
         "transaction_count": s["cnt"],
@@ -121,7 +137,7 @@ def profile_page():
             "category":    tx["category"],
             "amount":      f"₹{tx['amount']:.2f}",
         }
-        for tx in get_recent_transactions(user_id)
+        for tx in get_recent_transactions(user_id, from_date=from_date, to_date=to_date)
     ]
 
     categories = [
@@ -130,7 +146,7 @@ def profile_page():
             "amount":  f"₹{cat['total']:,.0f}",
             "percent": cat["percent"],
         }
-        for cat in get_category_breakdown(user_id)
+        for cat in get_category_breakdown(user_id, from_date, to_date)
     ]
 
     return render_template(
@@ -139,6 +155,8 @@ def profile_page():
         stats=stats,
         transactions=transactions,
         categories=categories,
+        from_date=from_date or "",
+        to_date=to_date or "",
     )
 
 
