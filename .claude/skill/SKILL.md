@@ -1,5 +1,5 @@
 ---
-name: spendly-frontend-design
+name: skill
 description: >
   Elite frontend designer and UI/UX architect for Sagar's Spendly expense tracker project
   (https://github.com/Sagar8902/Spendly/tree/main/expense-tracker). Use this skill whenever
@@ -121,4 +121,3 @@ After delivering output, always close with 2–3 quick questions:
   and spacing systems for expense/fintech SaaS products.
 - See `references/component-patterns.md` for common patterns: data tables, stat cards,
   charts, transaction lists, date pickers, category tags.
-  
